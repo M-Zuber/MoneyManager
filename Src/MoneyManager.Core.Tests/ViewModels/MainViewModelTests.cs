@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MoneyManager.Business.WindowsPhone.Test.Stubs;
 using MoneyManager.Core.DataAccess;
 using MoneyManager.Core.Manager;
 using MoneyManager.Core.Repositories;
@@ -23,13 +22,14 @@ namespace MoneyManager.Core.Tests.ViewModels
                 new AddTransactionViewModel(new TransactionRepository(new TransactionDataAccess(dbHelper)),
                     accountRepository,
                     settings,
-                    new NavigationServiceStub(),
                     new DialogServiceStub());
 
+            var addAccountViewModel = new AddAccountViewModel(accountRepository);
+
             var transactionManager = new TransactionManager(addTransactionViewModel, accountRepository, settings);
+            var accountManager = new AccountManager(accountRepository, addAccountViewModel, settings);
 
-            var mainViewModel = new MainViewModel(transactionManager, new NavigationServiceStub());
-
+            var mainViewModel = new MainViewModel(transactionManager, accountManager);
             mainViewModel.GoToAddTransactionCommand.Execute("Income");
 
             Assert.IsFalse(addTransactionViewModel.IsEdit);
@@ -50,12 +50,14 @@ namespace MoneyManager.Core.Tests.ViewModels
                 new AddTransactionViewModel(new TransactionRepository(new TransactionDataAccess(dbHelper)),
                     accountRepository,
                     settings,
-                    new NavigationServiceStub(),
                     new DialogServiceStub());
 
-            var transactionManager = new TransactionManager(addTransactionViewModel, accountRepository, settings);
+            var addAccountViewModel = new AddAccountViewModel(accountRepository);
 
-            var mainViewModel = new MainViewModel(transactionManager, new NavigationServiceStub());
+            var transactionManager = new TransactionManager(addTransactionViewModel, accountRepository, settings);
+            var accountManager = new AccountManager(accountRepository, addAccountViewModel, settings);
+
+            var mainViewModel = new MainViewModel(transactionManager, accountManager);
 
             mainViewModel.GoToAddTransactionCommand.Execute("Spending");
 
@@ -77,13 +79,14 @@ namespace MoneyManager.Core.Tests.ViewModels
                 new AddTransactionViewModel(new TransactionRepository(new TransactionDataAccess(dbHelper)),
                     accountRepository,
                     settings,
-                    new NavigationServiceStub(),
                     new DialogServiceStub());
 
+            var addAccountViewModel = new AddAccountViewModel(accountRepository);
+
             var transactionManager = new TransactionManager(addTransactionViewModel, accountRepository, settings);
+            var accountManager = new AccountManager(accountRepository, addAccountViewModel, settings);
 
-            var mainViewModel = new MainViewModel(transactionManager, new NavigationServiceStub());
-
+            var mainViewModel = new MainViewModel(transactionManager, accountManager);
             mainViewModel.GoToAddTransactionCommand.Execute("Transfer");
 
             Assert.IsFalse(addTransactionViewModel.IsEdit);

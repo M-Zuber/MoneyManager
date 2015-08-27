@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Views;
 using MoneyManager.Core.DataAccess;
+using MoneyManager.Core.Helper;
 using MoneyManager.Core.Logic;
 using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
@@ -13,22 +12,20 @@ using IDialogService = MoneyManager.Foundation.OperationContracts.IDialogService
 namespace MoneyManager.Core.ViewModels
 {
     [ImplementPropertyChanged]
-    public class AddTransactionViewModel : ViewModelBase
+    public class AddTransactionViewModel : BaseViewModel
     {
         private readonly IRepository<Account> accountRepository;
+        private readonly IDialogService dialogService;
         private readonly SettingDataAccess settings;
         private readonly ITransactionRepository transactionRepository;
-        private readonly IDialogService dialogService;
-        private readonly INavigationService navigationService;
 
         public AddTransactionViewModel(ITransactionRepository transactionRepository,
             IRepository<Account> accountRepository,
             SettingDataAccess settings,
-            INavigationService navigationService, IDialogService dialogService)
+            IDialogService dialogService)
         {
             this.transactionRepository = transactionRepository;
             this.settings = settings;
-            this.navigationService = navigationService;
             this.dialogService = dialogService;
             this.accountRepository = accountRepository;
 
@@ -60,7 +57,7 @@ namespace MoneyManager.Core.ViewModels
                     ? Strings.EditTitle
                     : Strings.AddTitle;
 
-                var type = TransactionTypeLogic.GetViewTitleForType(transactionRepository.Selected.Type);
+                var type = TransactionTypeHelper.GetViewTitleForType(transactionRepository.Selected.Type);
 
                 return string.Format(text, type);
             }
@@ -95,7 +92,7 @@ namespace MoneyManager.Core.ViewModels
             {
                 await TransactionLogic.SaveTransaction(transactionRepository.Selected, RefreshRealtedList);
             }
-            navigationService.GoBack();
+            Close(this);
         }
 
         private async void ShowAccountRequiredMessage()
@@ -110,7 +107,7 @@ namespace MoneyManager.Core.ViewModels
             {
                 await AccountLogic.AddTransactionAmount(transactionRepository.Selected);
             }
-            navigationService.GoBack();
+            Close(this);
         }
     }
 }

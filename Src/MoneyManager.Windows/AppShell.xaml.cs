@@ -29,30 +29,31 @@ namespace MoneyManager.Windows
                 {
                     Symbol = Symbol.Library,
                     Label = "Account",
-                    DestPage = typeof(MainView)
+                    DestPage = typeof (MainView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.View,
-                    Label = "Statistics"
-                    //DestPage = typeof(StatisticView)
+                    Label = "Statistics",
+                    DestPage = typeof(StatisticsView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.SyncFolder,
                     Label = "Backup",
-                    DestPage = typeof(BackupView)
-                },new NavMenuItem
+                    DestPage = typeof (BackupView)
+                },
+                new NavMenuItem
                 {
                     Symbol = Symbol.Setting,
-                    Label = "Settings"
-                    //DestPage = typeof(SettingsView)
+                    Label = "Settings",
+                    DestPage = typeof(SettingsView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.Account,
                     Label = "About",
-                    DestPage = typeof(About)
+                    DestPage = typeof (About)
                 }
             });
 

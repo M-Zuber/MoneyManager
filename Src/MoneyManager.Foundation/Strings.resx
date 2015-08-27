@@ -117,8 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AboutLabel" xml:space="preserve">
+    <value>About</value>
+  </data>
   <data name="AccountRequiredMessage" xml:space="preserve">
     <value>Please select an account.</value>
+  </data>
+  <data name="AccountsLabel" xml:space="preserve">
+    <value>Accounts</value>
   </data>
   <data name="AddIncomeLabel" xml:space="preserve">
     <value>Add Income</value>
@@ -135,8 +141,17 @@
   <data name="BackupFailedMessage" xml:space="preserve">
     <value>Backup failed!</value>
   </data>
+  <data name="BackupLabel" xml:space="preserve">
+    <value>Backup</value>
+  </data>
   <data name="CashflowLabel" xml:space="preserve">
     <value>Cashflow</value>
+  </data>
+  <data name="DeleteConfirmationMessage" xml:space="preserve">
+    <value>Do you wanna Delete this entry?</value>
+  </data>
+  <data name="DeleteTitle" xml:space="preserve">
+    <value>Delete?</value>
   </data>
   <data name="EditTitle" xml:space="preserve">
     <value>Edit</value>
@@ -164,6 +179,9 @@
   </data>
   <data name="MandatoryFieldEmptryTitle" xml:space="preserve">
     <value>Mandatory field</value>
+  </data>
+  <data name="MenuTitle" xml:space="preserve">
+    <value>Menu</value>
   </data>
   <data name="MonthlyLabel" xml:space="preserve">
     <value>Monthly</value>
@@ -195,8 +213,14 @@
   <data name="RevenueLabel" xml:space="preserve">
     <value>Revenue</value>
   </data>
+  <data name="SettingsLabel" xml:space="preserve">
+    <value>Settings</value>
+  </data>
   <data name="SpendingTitle" xml:space="preserve">
     <value>Spending</value>
+  </data>
+  <data name="StatisticsLabel" xml:space="preserve">
+    <value>Statistics</value>
   </data>
   <data name="StatisticTitle" xml:space="preserve">
     <value>Statistic</value>
