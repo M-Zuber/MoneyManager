@@ -1,32 +1,37 @@
-﻿using MoneyManager.Core.Logic;
-using MoneyManager.Foundation;
-using MoneyManager.Windows.Tile;
+﻿using MoneyManager.Core.ViewModels;
+using MoneyManager.Windows.Shortcut;
 
 namespace MoneyManager.Windows
 {
-    public static class TileHelper
+    public class TileHelper : BaseViewModel
     {
-        public static void DoNavigation(string tileId)
+        private readonly ModifyTransactionViewModel modifyTransactionViewModel;
+
+        public TileHelper(ModifyTransactionViewModel modifyTransactionViewModel)
+        {
+            this.modifyTransactionViewModel = modifyTransactionViewModel;
+        }
+
+        public bool DoNavigation(string tileId)
         {
             switch (tileId)
             {
                 case IncomeTile.ID:
-                    TransactionLogic.GoToAddTransaction(TransactionType.Income);
-                    //TODO:uncomment
-                    //((Frame) Window.Current.Content).Navigate(typeof (AddTransactionView));
-                    break;
+                    modifyTransactionViewModel.IsEdit = false;
+                    ShowViewModel<ModifyTransactionViewModel>(new {typeString = "Income"});
+                    return true;
 
                 case SpendingTile.ID:
-                    TransactionLogic.GoToAddTransaction(TransactionType.Spending);
-                    //TODO:uncomment
-                    //((Frame) Window.Current.Content).Navigate(typeof (AddTransactionView));
-                    break;
+                    modifyTransactionViewModel.IsEdit = false;
+                    ShowViewModel<ModifyTransactionViewModel>(new {typeString = "Spending"});
+                    return true;
 
                 case TransferTile.ID:
-                    TransactionLogic.GoToAddTransaction(TransactionType.Transfer);
-                    //TODO:uncomment
-                    //((Frame) Window.Current.Content).Navigate(typeof (AddTransactionView));
-                    break;
+                    modifyTransactionViewModel.IsEdit = false;
+                    ShowViewModel<ModifyTransactionViewModel>(new {typeString = "Transfer"});
+                    return true;
+                default:
+                    return false;
             }
         }
     }

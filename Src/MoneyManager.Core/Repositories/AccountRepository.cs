@@ -1,8 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using MoneyManager.Core.Logic;
-using MoneyManager.Foundation;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq.Expressions;
+using MoneyManager.Foundation.Interfaces;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Foundation.OperationContracts;
+using MoneyManager.Localization;
 using PropertyChanged;
 
 namespace MoneyManager.Core.Repositories
@@ -46,7 +47,7 @@ namespace MoneyManager.Core.Repositories
         public Account Selected { get; set; }
 
         /// <summary>
-        ///     Save a new item or update an existin one.
+        ///     SaveItem a new item or update an existin one.
         /// </summary>
         /// <param name="item">item to save</param>
         public void Save(Account item)
@@ -60,7 +61,7 @@ namespace MoneyManager.Core.Repositories
             {
                 data.Add(item);
             }
-            dataAccess.Save(item);
+            dataAccess.SaveItem(item);
         }
 
         /// <summary>
@@ -70,17 +71,18 @@ namespace MoneyManager.Core.Repositories
         public void Delete(Account item)
         {
             data.Remove(item);
-            dataAccess.Delete(item);
+            dataAccess.DeleteItem(item);
 
-            TransactionLogic.DeleteAssociatedTransactionsFromDatabase(item);
+            //TODO refactor this
+            //transactionManager.DeleteAssociatedTransactionsFromDatabase(item);
         }
 
         /// <summary>
         ///     Loads all accounts from the database to the data collection
         /// </summary>
-        public void Load()
+        public void Load(Expression<Func<Account, bool>> filter = null)
         {
-            Data = new ObservableCollection<Account>(dataAccess.LoadList());
+            Data = new ObservableCollection<Account>(dataAccess.LoadList(filter));
         }
     }
 }

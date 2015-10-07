@@ -1,14 +1,17 @@
 ﻿using System;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.Foundation.Metadata;
 using Windows.Globalization;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Cirrious.CrossCore;
 using Cirrious.MvvmCross.ViewModels;
+using MoneyManager.Core.ViewModels;
+using MoneyManager.Windows.Shortcut;
 using MoneyManager.Windows.Views;
-using Xamarin;
 
 namespace MoneyManager.Windows
 {
@@ -41,10 +44,7 @@ namespace MoneyManager.Windows
             if (shell == null)
             {
                 // Create a AppShell to act as the navigation context and navigate to the first page
-                shell = new AppShell();
-
-                // Set the default language
-                shell.Language = ApplicationLanguages.Languages[0];
+                shell = new AppShell {Language = ApplicationLanguages.Languages[0]};
 
                 shell.AppFrame.NavigationFailed += OnNavigationFailed;
             }
@@ -63,8 +63,52 @@ namespace MoneyManager.Windows
                 start.Start();
             }
 
+            shell.AppFrame.Navigate(typeof (MainView));
+            new TileHelper(Mvx.Resolve<ModifyTransactionViewModel>()).DoNavigation(e.TileId);
+
+            Tile.UpdateMainTile();
+
+            OverrideTitleBarColor();
+
             // Ensure the current window is active
             Window.Current.Activate();
+        }
+
+        private void OverrideTitleBarColor()
+        {
+            var titleBar = ApplicationView.GetForCurrentView().TitleBar;
+
+            // set up our brushes
+            var bkgColor = Current.Resources["SystemControlHighlightAccentBrush"] as SolidColorBrush;
+            var btnHoverColor = Current.Resources["TitleBarButtonHoverThemeBrush"] as SolidColorBrush;
+            var btnPressedColor = Current.Resources["TitleBarButtonPressedThemeBrush"] as SolidColorBrush;
+            var backgroundColor = Current.Resources["TitleBarBackgroundThemeBrush"] as SolidColorBrush;
+            var appForegroundColor = Current.Resources["AppForegroundBrush"] as SolidColorBrush;
+
+            // override colors!
+            if (bkgColor != null && btnHoverColor != null && btnPressedColor != null && appForegroundColor != null)
+            {
+                titleBar.BackgroundColor = bkgColor.Color;
+                titleBar.ForegroundColor = appForegroundColor.Color;
+                titleBar.ButtonBackgroundColor = bkgColor.Color;
+                titleBar.ButtonForegroundColor = appForegroundColor.Color;
+                titleBar.ButtonHoverBackgroundColor = btnHoverColor.Color;
+                titleBar.ButtonHoverForegroundColor = appForegroundColor.Color;
+                titleBar.ButtonPressedBackgroundColor = btnPressedColor.Color;
+                titleBar.ButtonPressedForegroundColor = appForegroundColor.Color;
+                titleBar.InactiveBackgroundColor = bkgColor.Color;
+                titleBar.InactiveForegroundColor = appForegroundColor.Color;
+                titleBar.ButtonInactiveBackgroundColor = bkgColor.Color;
+
+                // If on a mobile device set the status bar
+                if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+                {
+                    StatusBar.GetForCurrentView().BackgroundColor = backgroundColor?.Color;
+                    StatusBar.GetForCurrentView().BackgroundOpacity = 1;
+                    StatusBar.GetForCurrentView().ForegroundColor = appForegroundColor.Color;
+                }
+                titleBar.ButtonInactiveForegroundColor = appForegroundColor.Color;
+            }
         }
 
         /// <summary>
@@ -86,8 +130,10 @@ namespace MoneyManager.Windows
         /// <param name="e">Details about the suspend request.</param>
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
+            Tile.UpdateMainTile();
+
             var deferral = e.SuspendingOperation.GetDeferral();
-            //TODO: Save application state and stop any background activity
+            //TODO: SaveItem application state and stop any background activity
             deferral.Complete();
         }
     }

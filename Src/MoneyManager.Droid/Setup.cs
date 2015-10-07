@@ -1,11 +1,11 @@
-using System.ComponentModel;
 using Android.App;
 using Android.Content;
 using Cirrious.CrossCore;
 using Cirrious.MvvmCross.Droid.Platform;
 using Cirrious.MvvmCross.ViewModels;
 using MoneyManager.Core;
-using MoneyManager.Foundation.OperationContracts;
+using MoneyManager.Foundation.Interfaces;
+using MoneyManager.Localization;
 using SQLite.Net.Interop;
 using SQLite.Net.Platform.XamarinAndroid;
 using Xamarin;
@@ -27,12 +27,13 @@ namespace MoneyManager.Droid
             Mvx.RegisterType<IDatabasePath, DatabasePath>();
             Mvx.RegisterType<IDialogService, DialogService>();
             Mvx.RegisterType<IAppInformation, AppInformation>();
+            Mvx.RegisterType<IStoreFeatures, StoreFeatures>();
+            Mvx.RegisterType<IRoamingSettings, RoamingSettings>();
         }
-
 
         protected override IMvxApplication CreateApp()
         {
-            string insightKey = "e5c4ac56bb1ca47559bc8d4973d0a8c4d78c7648";
+            var insightKey = "599ff6bfdc79368ff3d5f5629a57c995fe93352e";
 
 #if DEBUG
             insightKey = Insights.DebugModeKey;
@@ -42,13 +43,9 @@ namespace MoneyManager.Droid
                 Insights.Initialize(insightKey, Application.Context);
             }
 
-            return new App();
-        }
+            Strings.Culture = new Localize().GetCurrentCultureInfo();
 
-        protected override void InitializeLastChance()
-        {
-            base.InitializeLastChance();
-            //Mvx.RegisterSingleton<IAppInformation>(new AppInformation());
+            return new App();
         }
     }
 }

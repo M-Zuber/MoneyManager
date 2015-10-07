@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using MoneyManager.Core;
-using MoneyManager.Core.DataAccess;
+using MoneyManager.DataAccess;
+using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Windows.Core.Tests.Helper;
-using SQLite.Net.Platform.WinRT;
+using MvvmCross.Plugins.Sqlite.WindowsUWP;
+using Xunit;
 
 namespace MoneyManager.Windows.Core.Tests.DataAccess
 {
-    [TestClass]
     public class TransactionDataAccessTest
     {
-        [TestMethod]
-        [TestCategory("Integration")]
+        [Fact]
+        [Trait("Category", "Integration")]
         public void TransactionDataAccess_CrudTransaction()
         {
             var transactionDataAccess =
-                new TransactionDataAccess(new DbHelper(new SQLitePlatformWinRT(), new TestDatabasePath()));
+                new TransactionDataAccess(new SqliteConnectionCreator(new WindowsSqliteConnectionFactory()));
 
             const double firstAmount = 76.30;
             const double secondAmount = 22.90;
@@ -28,39 +26,39 @@ namespace MoneyManager.Windows.Core.Tests.DataAccess
                 Amount = firstAmount,
                 Date = DateTime.Today,
                 Note = "this is a note!!!",
-                Cleared = false
+                IsCleared = false
             };
 
-            transactionDataAccess.Save(transaction);
+            transactionDataAccess.SaveItem(transaction);
 
             var list = transactionDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(firstAmount, list.First().Amount);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(firstAmount, list.First().Amount);
 
             transaction.Amount = secondAmount;
 
-            transactionDataAccess.Save(transaction);
+            transactionDataAccess.SaveItem(transaction);
 
             transactionDataAccess.LoadList();
             list = transactionDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(secondAmount, list.First().Amount);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(secondAmount, list.First().Amount);
 
-            transactionDataAccess.Delete(transaction);
+            transactionDataAccess.DeleteItem(transaction);
 
             transactionDataAccess.LoadList();
             list = transactionDataAccess.LoadList();
-            Assert.IsFalse(list.Any());
+            Assert.False(list.Any());
         }
 
-        [TestMethod]
-        [TestCategory("Integration")]
+        [Fact]
+        [Trait("Category", "Integration")]
         public void TransactionDataAccess_CrudTransactionWithoutAccount()
         {
             var transactionDataAccess =
-                new TransactionDataAccess(new DbHelper(new SQLitePlatformWinRT(), new TestDatabasePath()));
+                new TransactionDataAccess(new SqliteConnectionCreator(new WindowsSqliteConnectionFactory()));
 
             const double firstAmount = 76.30;
             const double secondAmount = 22.90;
@@ -70,31 +68,31 @@ namespace MoneyManager.Windows.Core.Tests.DataAccess
                 Amount = firstAmount,
                 Date = DateTime.Today,
                 Note = "this is a note!!!",
-                Cleared = false
+                IsCleared = false
             };
 
-            transactionDataAccess.Save(transaction);
+            transactionDataAccess.SaveItem(transaction);
 
             var list = transactionDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(firstAmount, list.First().Amount);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(firstAmount, list.First().Amount);
 
             transaction.Amount = secondAmount;
 
-            transactionDataAccess.Save(transaction);
+            transactionDataAccess.SaveItem(transaction);
 
             transactionDataAccess.LoadList();
             list = transactionDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(secondAmount, list.First().Amount);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(secondAmount, list.First().Amount);
 
-            transactionDataAccess.Delete(transaction);
+            transactionDataAccess.DeleteItem(transaction);
 
             transactionDataAccess.LoadList();
             list = transactionDataAccess.LoadList();
-            Assert.IsFalse(list.Any());
+            Assert.False(list.Any());
         }
     }
 }

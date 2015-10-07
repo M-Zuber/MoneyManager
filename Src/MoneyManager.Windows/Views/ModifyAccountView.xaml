@@ -1,0 +1,70 @@
+﻿<views:MvxWindowsPage x:Class="MoneyManager.Windows.Views.ModifyAccountView"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                      xmlns:controls="using:MoneyManager.Windows.Controls"
+                      xmlns:views="using:Cirrious.MvvmCross.WindowsUWP.Views"
+                      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                      mc:Ignorable="d">
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton Icon="Save"
+                          x:Uid="Done"
+                          Label="Done"
+                          Command="{Binding SaveCommand}" />
+            <AppBarButton Icon="Cancel"
+                          x:Uid="Cancel"
+                          Label="Cancel"
+                          Command="{Binding CancelCommand}" />
+        </CommandBar>
+    </Page.BottomAppBar>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <controls:PageHeader>
+            <controls:PageHeader.HeaderContent>
+                <TextBlock Style="{ThemeResource PageTitleTextBlockStyle}"
+                           Text="Add Account"
+                           x:Uid="ModifyAccountViewTitle" />
+            </controls:PageHeader.HeaderContent>
+        </controls:PageHeader>
+
+        <StackPanel Grid.Row="1"
+                    Margin="12,0,12,0"
+                    EntranceNavigationTransitionInfo.IsTargetElement="True">
+            <TextBox Text="{Binding SelectedAccount.Name, Mode=TwoWay}"
+                     Header="Name"
+                     VerticalAlignment="Top"
+                     x:Uid="Name"
+                     Margin="0,0,0,12" />
+            <TextBox Text="{Binding SelectedAccount.Iban, Mode=TwoWay}"
+                     Header="IBAN"
+                     VerticalAlignment="Top"
+                     x:Uid="Iban"
+                     Margin="0,0,0,12" />
+            <Grid>
+                <TextBox
+                    Text="{Binding SelectedAccount.CurrentBalance, Mode=TwoWay}"
+                    Header="amount"
+                    InputScope="Number"
+                    x:Uid="Balance"
+                    x:Name="TextBoxCurrentBalance"
+                    TextAlignment="Right"
+                    TextChanged="ReplaceSeparatorChar"
+                    GotFocus="RemoveZeroOnFocus"
+                    LostFocus="AddZeroIfEmpty" />
+            </Grid>
+            <TextBox Text="{Binding SelectedAccount.Note, Mode=TwoWay}"
+                     Header="Notes"
+                     VerticalAlignment="Top"
+                     x:Uid="Notes"
+                     Margin="0,0,-0.167,0"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</views:MvxWindowsPage>

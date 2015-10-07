@@ -1,47 +1,55 @@
 ﻿using Cirrious.MvvmCross.ViewModels;
-using MoneyManager.Core.Manager;
+using MoneyManager.Foundation.Model;
 
 namespace MoneyManager.Core.ViewModels
 {
     public class MainViewModel : BaseViewModel
     {
-        private readonly TransactionManager transactionManager;
-        private readonly AccountManager accountManager;
+        private readonly ModifyAccountViewModel modifyAccountViewModel;
+        private readonly ModifyTransactionViewModel modifyTransactionViewModel;
 
         /// <summary>
         ///     Creates an MainViewModel object.
         /// </summary>
-        /// <param name="transactionManager">Instance of <see cref="TransactionManager"/></param>
-        /// <param name="accountManager">Instance of <see cref="AccountManager"/></param>
-        public MainViewModel(TransactionManager transactionManager, AccountManager accountManager)
+        public MainViewModel(ModifyAccountViewModel modifyAccountViewModel,
+            ModifyTransactionViewModel modifyTransactionViewModel)
         {
-            this.accountManager = accountManager;
-            this.transactionManager = transactionManager;
-
-            GoToAddTransactionCommand = new MvxCommand<string>(GoToAddTransaction);
-            GoToAddAccountCommand = new MvxCommand(GoToAddAccount);
+            this.modifyAccountViewModel = modifyAccountViewModel;
+            this.modifyTransactionViewModel = modifyTransactionViewModel;
         }
 
         /// <summary>
-        ///     Prepare everything and navigate to AddTransactionView
+        ///     Prepare everything and navigate to AddTransaction view
         /// </summary>
-        public MvxCommand<string> GoToAddTransactionCommand { get; private set; }
+        public MvxCommand<string> GoToAddTransactionCommand => new MvxCommand<string>(GoToAddTransaction);
 
         /// <summary>
-        ///     Prepare everything and navigate to AddAccountView
+        ///     Navigates to the About view
         /// </summary>
-        public MvxCommand GoToAddAccountCommand { get; private set; }
+        public MvxCommand GoToAboutCommand => new MvxCommand(GoToAbout);
 
-        private void GoToAddTransaction(string type)
+        /// <summary>
+        ///     Prepare everything and navigate to AddAccount view
+        /// </summary>
+        public MvxCommand GoToAddAccountCommand => new MvxCommand(GoToAddAccount);
+
+        private void GoToAddTransaction(string transactionType)
         {
-            transactionManager.PrepareCreation(type);
-            ShowViewModel<AddTransactionViewModel>();
+            modifyTransactionViewModel.IsEdit = false;
+            ShowViewModel<ModifyTransactionViewModel>(new {typeString = transactionType});
         }
 
         private void GoToAddAccount()
         {
-            accountManager.PrepareCreation();
-            ShowViewModel<AddAccountViewModel>();
+            modifyAccountViewModel.IsEdit = false;
+            modifyAccountViewModel.SelectedAccount = new Account();
+
+            ShowViewModel<ModifyAccountViewModel>();
+        }
+
+        private void GoToAbout()
+        {
+            ShowViewModel<AboutViewModel>();
         }
     }
 }

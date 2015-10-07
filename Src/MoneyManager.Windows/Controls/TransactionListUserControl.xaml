@@ -4,59 +4,64 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:MoneyManager.Windows.Controls"
-             xmlns:converter1="using:MoneyManager.Windows.Converter"
+             xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+             xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+             xmlns:converter="using:MoneyManager.Windows.Converter"
              mc:Ignorable="d"
              d:DesignHeight="300"
-             d:DesignWidth="400"
-             DataContext="{Binding TransactionListViewModel, Source={StaticResource Locator}}">
+             d:DesignWidth="400">
+
+    <interactivity:Interaction.Behaviors>
+        <core:EventTriggerBehavior EventName="Loaded">
+            <core:InvokeCommandAction Command="{Binding LoadedCommand, Mode=OneWay}" />
+        </core:EventTriggerBehavior>
+        <core:EventTriggerBehavior EventName="Unloaded">
+            <core:InvokeCommandAction Command="{Binding UnloadedCommand, Mode=OneWay}" />
+        </core:EventTriggerBehavior>
+    </interactivity:Interaction.Behaviors>
 
     <UserControl.Resources>
-        <converter1:AmountFormatConverter x:Key="AmountFormatConverter" />
-        <converter1:CultureConverter x:Key="FormatConverter" />
-        <converter1:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converter1:NoteVisibilityConverter x:Key="NoteVisibilityConverter" />
-        <converter1:TransactionAmountConverter x:Key="TransactionAmountConverter" />
-        <converter1:ThemedImageConverter x:Key="ThemedImageConverter" />
-        <converter1:TransactionStyleConverter x:Key="TransactionStyleConverter" />
+        <converter:NativeTransactionAmountConverter x:Key="TransactionAmountConverter" />
+        <converter:CultureConverter x:Key="FormatConverter" />
+        <converter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converter:NoteVisibilityConverter x:Key="NoteVisibilityConverter" />
+        <converter:ThemedImageConverter x:Key="ThemedImageConverter" />
 
         <DataTemplate x:Key="TransactionTemplate">
             <StackPanel Margin="0,0,0,6"
                         HorizontalAlignment="Stretch"
                         MinWidth="100"
-                        Holding="OpenContextMenu"
-                        Opacity="{Binding Converter={StaticResource TransactionStyleConverter}}">
+                        Holding="TransactionList_Holding"
+                        RightTapped="TransactionList_RightTapped">
                 <FlyoutBase.AttachedFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem x:Uid="Edit"
                                         Text="Edit"
                                         Click="EditTransaction" />
-                        <MenuFlyoutItem x:Uid="Delete"
-                                        Text="Delete"
+                        <MenuFlyoutItem x:Uid="DeleteItem"
+                                        Text="DeleteItem"
                                         Click="DeleteTransaction" />
                     </MenuFlyout>
                 </FlyoutBase.AttachedFlyout>
                 <Grid HorizontalAlignment="Stretch"
-                      Margin="0,0,10,3">
+                      Margin="0,0,0,3">
                     <TextBlock
-                        Text="{Binding Date, ConverterParameter=\{0:d\}, Converter={StaticResource FormatConverter}}"
-                        Margin="12,0,0,0" />
-
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Right">
-                        <TextBlock Text="{Binding Converter={StaticResource TransactionAmountConverter}}"
-                                   Margin="0,0,3,0" />
-                        <TextBlock
-                            Text="{Binding AmountWithoutExchange, Converter={StaticResource AmountFormatConverter}}" />
-                    </StackPanel>
+                        Text="{Binding Date, ConverterParameter=\{0:d\}, Converter={StaticResource FormatConverter}}" />
+                    <TextBlock
+                        Text="{Binding Converter={StaticResource TransactionAmountConverter}, ConverterParameter={Binding ChargedAccount}}"
+                        HorizontalAlignment="Right" />
                 </Grid>
                 <Grid>
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Left">
                         <TextBlock Text="{Binding Category.Name}"
-                                   Margin="12,0,2,10" />
+                                   Margin="0,0,2,10"
+                                   Style="{StaticResource DeemphasizedBodyTextBlockStyle}" />
                         <TextBlock Text="/"
+                                   Style="{StaticResource DeemphasizedBodyTextBlockStyle}"
                                    Visibility="{Binding Note, Converter={StaticResource NoteVisibilityConverter}}" />
                         <TextBlock Text="{Binding Note}"
+                                   Style="{StaticResource DeemphasizedBodyTextBlockStyle}"
                                    Visibility="{Binding Note, Converter={StaticResource NoteVisibilityConverter}}"
                                    Margin="2,0,0,0"
                                    MaxWidth="150"
@@ -70,6 +75,14 @@
                             <Image
                                 Source="{Binding ConverterParameter={ThemeResource ApplicationPageBackgroundThemeBrush}, Converter={StaticResource ThemedImageConverter}}"
                                 DataContext="/Assets/{0}/transfer.png"
+                                Width="30"
+                                Height="30" />
+                        </Grid>
+                        <Grid HorizontalAlignment="Right"
+                              Visibility="{Binding IsCleared, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Image
+                                Source="{Binding ConverterParameter={ThemeResource ApplicationPageBackgroundThemeBrush}, Converter={StaticResource ThemedImageConverter}}"
+                                DataContext="/Assets/{0}/done.png"
                                 Width="30"
                                 Height="30" />
                         </Grid>
@@ -89,18 +102,28 @@
 
     <Grid EntranceNavigationTransitionInfo.IsTargetElement="True">
         <controls:BalanceUserControl />
-        <ListView ItemsSource="{Binding RelatedTransactions, Mode=TwoWay}"
-                  ItemTemplate="{StaticResource TransactionTemplate}"
-                  HorizontalAlignment="Stretch"
-                  x:Name="ListViewTransactions"
-                  ShowsScrollingPlaceholders="True"
-                  SelectionChanged="LoadDetails">
+        <controls:AlternatingRowListView OddRowBackground="{ThemeResource ListViewBackgroundOddBrush}"
+                                         EvenRowBackground="{ThemeResource ListViewBackgroundEvenBrush}"
+                                         ItemsSource="{Binding RelatedTransactions, Mode=TwoWay}"
+                                         ItemTemplate="{StaticResource TransactionTemplate}"
+                                         HorizontalAlignment="Stretch"
+                                         ShowsScrollingPlaceholders="True"
+                                         Margin="0,20,0,0"
+                                         SelectedItem="{Binding SelectedTransaction, Mode=TwoWay}">
+            <interactivity:Interaction.Behaviors>
+                <core:EventTriggerBehavior EventName="SelectionChanged">
+                    <core:InvokeCommandAction Command="{Binding EditCommand, Mode=OneWay}" />
+                </core:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment"
                             Value="Stretch" />
+                    <Setter Property="VerticalContentAlignment"
+                            Value="Stretch" />
                 </Style>
             </ListView.ItemContainerStyle>
-        </ListView>
+        </controls:AlternatingRowListView>
     </Grid>
 </UserControl>

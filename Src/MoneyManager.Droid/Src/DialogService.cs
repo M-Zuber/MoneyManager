@@ -1,13 +1,17 @@
 using System;
 using System.Threading.Tasks;
 using Android.App;
-using MoneyManager.Foundation;
-using MoneyManager.Foundation.OperationContracts;
+using Cirrious.CrossCore;
+using Cirrious.CrossCore.Droid.Platform;
+using MoneyManager.Foundation.Interfaces;
+using MoneyManager.Localization;
 
 namespace MoneyManager.Droid
 {
     public class DialogService : IDialogService
     {
+        protected Activity CurrentActivity => Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity;
+
         /// <summary>
         ///     Shows a dialog with title and message. Contains only an OK button.
         /// </summary>
@@ -15,7 +19,7 @@ namespace MoneyManager.Droid
         /// <param name="message">Text to display.</param>
         public async Task ShowMessage(string title, string message)
         {
-            var builder = new AlertDialog.Builder(Application.Context);
+            var builder = new AlertDialog.Builder(CurrentActivity);
             builder.SetTitle(title);
             builder.SetMessage(message);
             builder.Show();
@@ -31,7 +35,8 @@ namespace MoneyManager.Droid
         /// <param name="negativeButtonText">Text for the no button.</param>
         /// <param name="positivAction">Action who shall be executed on the positive button click.</param>
         /// <param name="negativAction">Action who shall be executed on the negative button click.</param>
-        public async Task ShowConfirmMessage(string title, string message, Action positivAction, string positiveButtonText = null, string negativeButtonText = null, Action negativAction = null)
+        public async Task ShowConfirmMessage(string title, string message, Action positivAction,
+            string positiveButtonText = null, string negativeButtonText = null, Action negativAction = null)
         {
             var isPositiveAnswer = await ShowConfirmMessage(title, message, positiveButtonText, negativeButtonText);
 
@@ -52,11 +57,12 @@ namespace MoneyManager.Droid
         /// <param name="message">Text for the dialog.</param>
         /// <param name="positiveButtonText">Text for the yes button.</param>
         /// <param name="negativeButtonText">Text for the no button.</param>
-        public async Task<bool> ShowConfirmMessage(string title, string message, string positiveButtonText = null, string negativeButtonText = null)
+        public async Task<bool> ShowConfirmMessage(string title, string message, string positiveButtonText = null,
+            string negativeButtonText = null)
         {
             var isPositivAnswer = false;
 
-            var builder = new AlertDialog.Builder(Application.Context);
+            var builder = new AlertDialog.Builder(CurrentActivity);
             builder.SetTitle(title);
             builder.SetMessage(message);
             builder.SetPositiveButton(Strings.YesLabel, (s, e) => isPositivAnswer = true);

@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using MoneyManager.Foundation;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq.Expressions;
+using MoneyManager.Foundation.Interfaces;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Foundation.OperationContracts;
+using MoneyManager.Localization;
 using PropertyChanged;
 
 namespace MoneyManager.Core.Repositories
@@ -45,7 +47,7 @@ namespace MoneyManager.Core.Repositories
         public Category Selected { get; set; }
 
         /// <summary>
-        ///     Save a new item or update an existin one.
+        ///     SaveItem a new item or update an existin one.
         /// </summary>
         /// <param name="item">item to save</param>
         public void Save(Category item)
@@ -59,7 +61,7 @@ namespace MoneyManager.Core.Repositories
             {
                 data.Add(item);
             }
-            dataAccess.Save(item);
+            dataAccess.SaveItem(item);
         }
 
         /// <summary>
@@ -69,15 +71,15 @@ namespace MoneyManager.Core.Repositories
         public void Delete(Category item)
         {
             data.Remove(item);
-            dataAccess.Delete(item);
+            dataAccess.DeleteItem(item);
         }
 
         /// <summary>
         ///     Loads all categories from the database to the data collection
         /// </summary>
-        public void Load()
+        public void Load(Expression<Func<Category, bool>> filter = null)
         {
-            Data = new ObservableCollection<Category>(dataAccess.LoadList());
+            Data = new ObservableCollection<Category>(dataAccess.LoadList(filter));
         }
     }
 }

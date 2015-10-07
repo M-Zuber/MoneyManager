@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
+using MoneyManager.Localization;
 using MoneyManager.Windows.Controls;
 using MoneyManager.Windows.Views;
 
@@ -28,32 +29,32 @@ namespace MoneyManager.Windows
                 new NavMenuItem
                 {
                     Symbol = Symbol.Library,
-                    Label = "Account",
+                    Label = Strings.AccountsLabel,
                     DestPage = typeof (MainView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.View,
-                    Label = "Statistics",
-                    DestPage = typeof(StatisticsView)
+                    Label = Strings.StatisticsLabel,
+                    DestPage = typeof (StatisticsView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.SyncFolder,
-                    Label = "Backup",
+                    Label = Strings.BackupLabel,
                     DestPage = typeof (BackupView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.Setting,
-                    Label = "Settings",
-                    DestPage = typeof(SettingsView)
+                    Label = Strings.SettingsLabel,
+                    DestPage = typeof (SettingsView)
                 },
                 new NavMenuItem
                 {
                     Symbol = Symbol.Account,
-                    Label = "About",
-                    DestPage = typeof (About)
+                    Label = Strings.AboutLabel,
+                    DestPage = typeof (AboutView)
                 }
             });
 
@@ -73,18 +74,19 @@ namespace MoneyManager.Windows
                 TogglePaneButton.Focus(FocusState.Programmatic);
             };
 
-            SystemNavigationManager.GetForCurrentView().BackRequested += SystemNavigationManager_BackRequested;
+            var currentView = SystemNavigationManager.GetForCurrentView();
+            currentView.BackRequested += SystemNavigationManager_BackRequested;
 
             // If on a phone device that has hardware buttons then we hide the app's back button.
-            if (ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons"))
-            {
-                BackButton.Visibility = Visibility.Collapsed;
-            }
+            currentView.AppViewBackButtonVisibility =
+                ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")
+                    ? AppViewBackButtonVisibility.Collapsed
+                    : AppViewBackButtonVisibility.Visible;
 
             NavMenuList.ItemsSource = navlist;
         }
 
-        public Frame AppFrame => frame;
+        public Frame AppFrame => Frame;
 
         public Rect TogglePaneButtonRect { get; private set; }
 
@@ -123,6 +125,13 @@ namespace MoneyManager.Windows
                 case VirtualKey.GamepadLeftThumbstickDown:
                 case VirtualKey.NavigationDown:
                     direction = FocusNavigationDirection.Down;
+                    break;
+
+                case VirtualKey.Escape:
+                case VirtualKey.Back:
+                case VirtualKey.B:
+                    var temp = false;
+                    BackRequested(ref temp);
                     break;
             }
 
@@ -205,15 +214,9 @@ namespace MoneyManager.Windows
             e.Handled = handled;
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            var ignored = false;
-            BackRequested(ref ignored);
-        }
-
         private void BackRequested(ref bool handled)
         {
-            // Get a hold of the current frame so that we can inspect the app back stack.
+            // Get a hold of the current Frame so that we can inspect the app back stack.
 
             if (AppFrame == null)
                 return;
@@ -284,9 +287,10 @@ namespace MoneyManager.Windows
         private void OnNavigatedToPage(object sender, NavigationEventArgs e)
         {
             // After a successful navigation set keyboard focus to the loaded page
-            if (e.Content is Page)
+            var page = e.Content as Page;
+            if (page != null)
             {
-                var control = (Page) e.Content;
+                var control = page;
                 control.Loaded += Page_Loaded;
             }
         }
@@ -296,6 +300,7 @@ namespace MoneyManager.Windows
             ((Page) sender).Focus(FocusState.Programmatic);
             ((Page) sender).Loaded -= Page_Loaded;
             CheckTogglePaneButtonSizeChanged();
+            RootSplitView.IsSwipeablePaneOpen = false;
         }
 
         #endregion

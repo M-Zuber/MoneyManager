@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using MoneyManager.Foundation.Interfaces;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Foundation.OperationContracts;
 
 namespace MoneyManager.Core.Tests.Mocks
 {
@@ -10,12 +10,12 @@ namespace MoneyManager.Core.Tests.Mocks
     {
         public List<Account> AccountTestList = new List<Account>();
 
-        public void Save(Account itemToSave)
+        public void SaveItem(Account itemToSave)
         {
             AccountTestList.Add(itemToSave);
         }
 
-        public void Delete(Account item)
+        public void DeleteItem(Account item)
         {
             if (AccountTestList.Contains(item))
             {

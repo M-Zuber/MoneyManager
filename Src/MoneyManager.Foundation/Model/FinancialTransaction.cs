@@ -22,18 +22,14 @@ namespace MoneyManager.Foundation.Model
         public int? CategoryId { get; set; }
 
         public DateTime Date { get; set; }
-        public double AmountWithoutExchange { get; set; }
         public double Amount { get; set; }
-        public bool IsExchangeModeActive { get; set; }
-        public double ExchangeRatio { get; set; }
-        public string Currency { get; set; }
-        public bool Cleared { get; set; }
+        public bool IsCleared { get; set; }
         public int Type { get; set; }
         public string Note { get; set; }
         public bool IsRecurring { get; set; }
 
         [ForeignKey(typeof (RecurringTransaction))]
-        public int? ReccuringTransactionId { get; set; }
+        public int ReccuringTransactionId { get; set; }
 
         [ManyToOne("ChargedAccountId", CascadeOperations = CascadeOperation.All)]
         public Account ChargedAccount { get; set; }
@@ -44,19 +40,13 @@ namespace MoneyManager.Foundation.Model
         [ManyToOne]
         public Category Category { get; set; }
 
-        [ManyToOne]
+        [ManyToOne("ReccuringTransactionId", CascadeOperations = CascadeOperation.All)]
         public RecurringTransaction RecurringTransaction { get; set; }
 
         [Ignore]
-        public bool ClearTransactionNow
-        {
-            get { return Date.Date <= DateTime.Now.Date; }
-        }
+        public bool ClearTransactionNow => Date.Date <= DateTime.Now.Date;
 
         [Ignore]
-        public bool IsTransfer
-        {
-            get { return Type == (int) TransactionType.Transfer; }
-        }
+        public bool IsTransfer => Type == (int) TransactionType.Transfer;
     }
 }

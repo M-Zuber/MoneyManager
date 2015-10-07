@@ -1,11 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using Cirrious.MvvmCross.ViewModels;
-using MoneyManager.Foundation;
+using MoneyManager.Foundation.Interfaces;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Foundation.OperationContracts;
+using MoneyManager.Localization;
 using PropertyChanged;
-using IDialogService = MoneyManager.Foundation.OperationContracts.IDialogService;
 
 namespace MoneyManager.Core.ViewModels
 {
@@ -23,7 +22,6 @@ namespace MoneyManager.Core.ViewModels
         /// </summary>
         /// <param name="categoryRepository">An instance of <see cref="IRepository{T}" /> of type category.</param>
         /// <param name="transactionRepository">An instance of <see cref="ITransactionRepository" />.</param>
-        /// <param name="navigationService">An instance of <see cref="INavigationService" /></param>
         /// <param name="dialogService">An instance of <see cref="IDialogService" /></param>
         public CategoryListViewModel(IRepository<Category> categoryRepository,
             ITransactionRepository transactionRepository,
@@ -33,13 +31,16 @@ namespace MoneyManager.Core.ViewModels
             this.transactionRepository = transactionRepository;
             this.dialogService = dialogService;
 
-            DeleteCategoryCommand = new MvxCommand<Category>(DeleteCategory);
+            Categories = categoryRepository.Data;
         }
 
         /// <summary>
         ///     Deletes the passed Category after show a confirmation dialog.
         /// </summary>
-        public MvxCommand<Category> DeleteCategoryCommand { get; set; }
+        public MvxCommand<Category> DeleteCategoryCommand => new MvxCommand<Category>(DeleteCategory);
+
+        public MvxCommand DoneCommand => new MvxCommand(Done);
+        public MvxCommand CancelCommand => new MvxCommand(Cancel);
 
         /// <summary>
         ///     Indicates wether the view is shown from the settings to adjust something
@@ -47,14 +48,10 @@ namespace MoneyManager.Core.ViewModels
         /// </summary>
         public bool IsSettingCall { get; set; }
 
-        public ObservableCollection<Category> Categories
-        {
-            get { return categoryRepository.Data; }
-            set { categoryRepository.Data = value; }
-        }
+        public ObservableCollection<Category> Categories { get; set; }
 
         /// <summary>
-        ///     The currently selected category. If IsSettingsCall is set ît will
+        ///     The currently selected category. If IsSettingsCall is set it will
         ///     return and set the selected item in the CategoryRepository, otherwise
         ///     the category of the selected transaction.
         /// </summary>
@@ -64,11 +61,9 @@ namespace MoneyManager.Core.ViewModels
             {
                 var selected = IsSettingCall
                     ? categoryRepository.Selected
-                    : transactionRepository.Selected.Category;
+                    : transactionRepository.Selected?.Category;
 
-                return selected == null
-                    ? new Category()
-                    : transactionRepository.Selected.Category;
+                return selected ?? new Category();
             }
             set
             {
@@ -84,7 +79,6 @@ namespace MoneyManager.Core.ViewModels
                 else
                 {
                     transactionRepository.Selected.Category = value;
-                    Close(this);
                 }
             }
         }
@@ -122,10 +116,22 @@ namespace MoneyManager.Core.ViewModels
 
         private async void DeleteCategory(Category categoryToDelete)
         {
-            if (await dialogService.ShowConfirmMessage(Strings.DeleteTitle, Strings.DeleteConfirmationMessage))
+            if (await dialogService.ShowConfirmMessage(Strings.DeleteTitle, Strings.DeleteCategoryConfirmationMessage))
             {
                 categoryRepository.Delete(categoryToDelete);
             }
+        }
+
+        private void Done()
+        {
+            transactionRepository.Selected.Category = SelectedCategory;
+            Categories = categoryRepository.Data;
+            Close(this);
+        }
+
+        private void Cancel()
+        {
+            Close(this);
         }
     }
 }

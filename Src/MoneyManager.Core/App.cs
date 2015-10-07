@@ -1,8 +1,12 @@
-﻿using Cirrious.CrossCore;
+﻿using System.Reflection;
+using Cirrious.CrossCore;
 using Cirrious.CrossCore.IoC;
 using Cirrious.MvvmCross.ViewModels;
+using MoneyManager.Core.Manager;
 using MoneyManager.Core.ViewModels;
-using MoneyManager.Foundation.OperationContracts;
+using MoneyManager.DataAccess;
+using MoneyManager.Foundation;
+using MoneyManager.Foundation.Interfaces;
 
 namespace MoneyManager.Core
 {
@@ -13,16 +17,21 @@ namespace MoneyManager.Core
         /// </summary>
         public override void Initialize()
         {
-            Mvx.RegisterType<IDbHelper, DbHelper>();
+            Mvx.RegisterType<ISqliteConnectionCreator, SqliteConnectionCreator>();
 
             CreatableTypes()
                 .EndingWith("Service")
                 .AsInterfaces()
                 .RegisterAsLazySingleton();
 
-            CreatableTypes()
+            CreatableTypes(typeof (AccountDataAccess).GetTypeInfo().Assembly)
                 .EndingWith("DataAccess")
                 .AsInterfaces()
+                .RegisterAsLazySingleton();
+
+            CreatableTypes(typeof (AccountDataAccess).GetTypeInfo().Assembly)
+                .EndingWith("DataAccess")
+                .AsTypes()
                 .RegisterAsLazySingleton();
 
             CreatableTypes()
@@ -40,33 +49,11 @@ namespace MoneyManager.Core
                 .AsTypes()
                 .RegisterAsLazySingleton();
 
+            Mvx.Resolve<RecurringTransactionManager>().CheckRecurringTransactions();
+            Mvx.Resolve<TransactionManager>().ClearTransactions();
+
             // Start the app with the Main View Model.
             RegisterAppStart<MainViewModel>();
         }
-
-        //This properties are used to bind the view model to the datacontext directly in xaml (windows only)
-        public MainViewModel MainViewModel => Mvx.Resolve<MainViewModel>();
-
-        public AddAccountViewModel AddAccountViewModel => Mvx.Resolve<AddAccountViewModel>();
-
-        public AccountListUserControlViewModel AccountListUserControlViewModel => Mvx.Resolve<AccountListUserControlViewModel>();
-
-        public AddTransactionViewModel AddTransactionViewModel => Mvx.Resolve<AddTransactionViewModel>();
-
-        public BalanceViewModel BalanceViewModel => Mvx.Resolve<BalanceViewModel>();
-
-        public CategoryListViewModel CategoryListViewModel => Mvx.Resolve<CategoryListViewModel>();
-
-        public TransactionListViewModel TransactionListViewModel => Mvx.Resolve<TransactionListViewModel>();
-
-        public TileSettingsViewModel TileSettingsViewModel => Mvx.Resolve<TileSettingsViewModel>();
-
-        public SettingDefaultsViewModel SettingDefaultsViewModel => Mvx.Resolve<SettingDefaultsViewModel>();
-
-        public StatisticViewModel StatisticViewModel => Mvx.Resolve<StatisticViewModel>();
-
-        public BackupViewModel BackupViewModel => Mvx.Resolve<BackupViewModel>();
-
-        public SelectCategoryViewModel SelectCategoryViewModel => Mvx.Resolve<SelectCategoryViewModel>();
     }
 }

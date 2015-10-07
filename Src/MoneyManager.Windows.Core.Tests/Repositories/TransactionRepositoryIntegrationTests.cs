@@ -1,31 +1,28 @@
 ﻿using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using MoneyManager.Core;
-using MoneyManager.Core.DataAccess;
 using MoneyManager.Core.Repositories;
+using MoneyManager.DataAccess;
+using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Windows.Core.Tests.Helper;
-using SQLite.Net.Platform.WinRT;
+using MvvmCross.Plugins.Sqlite.WindowsUWP;
 using SQLiteNetExtensions.Extensions;
+using Xunit;
 
 namespace MoneyManager.Windows.Core.Tests.Repositories
 {
-    [TestClass]
     public class TransactionRepositoryIntegrationTests
     {
-        [TestMethod]
-        [TestCategory("Integration")]
+        [Fact]
+        [Trait("Category", "Integration")]
         public void TransactionRepository_LoadDataFromDbThroughRepository()
         {
-            var dbHelper = new DbHelper(new SQLitePlatformWinRT(), new TestDatabasePath());
+            var dbHelper = new SqliteConnectionCreator(new WindowsSqliteConnectionFactory());
 
-            using (var db = dbHelper.GetSqlConnection())
+            using (var db = dbHelper.GetConnection())
             {
                 db.DeleteAll<FinancialTransaction>();
                 db.InsertWithChildren(new FinancialTransaction
                 {
                     Amount = 999,
-                    AmountWithoutExchange = 777,
                     ChargedAccount = new Account
                     {
                         Name = "testAccount"
@@ -33,25 +30,26 @@ namespace MoneyManager.Windows.Core.Tests.Repositories
                 });
             }
 
-            var repository = new TransactionRepository(new TransactionDataAccess(dbHelper));
+            var repository = new TransactionRepository(new TransactionDataAccess(dbHelper),
+                new RecurringTransactionDataAccess(dbHelper));
 
-            Assert.IsTrue(repository.Data.Any());
-            Assert.AreEqual(999, repository.Data[0].Amount);
-            Assert.AreEqual(777, repository.Data[0].AmountWithoutExchange);
+            repository.Data.Any().ShouldBeTrue();
+            repository.Data[0].Amount.ShouldBe(999);
         }
 
-        [TestMethod]
-        [TestCategory("Integration")]
+        [Fact]
+        [Trait("Category", "Integration")]
         public void TransactionRepository_Update()
         {
-            var dbHelper = new DbHelper(new SQLitePlatformWinRT(), new TestDatabasePath());
+            var dbHelper = new SqliteConnectionCreator(new WindowsSqliteConnectionFactory());
 
-            using (var db = dbHelper.GetSqlConnection())
+            using (var db = dbHelper.GetConnection())
             {
                 db.DeleteAll<FinancialTransaction>();
             }
 
-            var repository = new TransactionRepository(new TransactionDataAccess(dbHelper));
+            var repository = new TransactionRepository(new TransactionDataAccess(dbHelper),
+                new RecurringTransactionDataAccess(dbHelper));
             var account = new Account
             {
                 Name = "TestAccount"
@@ -60,20 +58,48 @@ namespace MoneyManager.Windows.Core.Tests.Repositories
             var transaction = new FinancialTransaction
             {
                 ChargedAccount = account,
-                Amount = 20,
-                AmountWithoutExchange = 20
+                Amount = 20
             };
 
             repository.Save(transaction);
-            Assert.AreEqual(1, repository.Data.Count);
-            Assert.AreSame(transaction, repository.Data[0]);
+            repository.Data.Count.ShouldBe(1);
+            repository.Data[0].ShouldBeSameAs(transaction);
 
             transaction.Amount = 30;
 
             repository.Save(transaction);
 
-            Assert.AreEqual(1, repository.Data.Count);
-            Assert.AreEqual(30, repository.Data[0].Amount);
+            repository.Data.Count.ShouldBe(1);
+            repository.Data[0].Amount.ShouldBe(30);
+        }
+
+        [Fact]
+        [Trait("Category", "Integration")]
+        public void LoadRecurringList_ListWithRecurringTransaction()
+        {
+            var dbHelper = new SqliteConnectionCreator(new WindowsSqliteConnectionFactory());
+
+            var transactionDataAccess =
+                new TransactionDataAccess(dbHelper);
+            var recTransactionDataAccess =
+                new RecurringTransactionDataAccess(dbHelper);
+            var repository = new TransactionRepository(transactionDataAccess, recTransactionDataAccess);
+
+            transactionDataAccess.SaveItem(new FinancialTransaction {Amount = 999, IsRecurring = false});
+            transactionDataAccess.SaveItem(new FinancialTransaction
+            {
+                Amount = 123,
+                IsRecurring = true,
+                RecurringTransaction = new RecurringTransaction {IsEndless = true}
+            });
+
+            repository.Load();
+            var result = repository.LoadRecurringList().ToList();
+
+            result.Count.ShouldBe(1);
+
+            result.First().Id.ShouldBe(2);
+            result.First().RecurringTransaction.Id.ShouldBe(1);
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using MoneyManager.Foundation.Model;
-using MoneyManager.Foundation.OperationContracts;
+﻿using MoneyManager.Foundation.Interfaces;
+using MoneyManager.Foundation.Model;
 
 namespace MoneyManager.Core.Manager
 {
@@ -7,17 +7,14 @@ namespace MoneyManager.Core.Manager
     {
         private readonly IRepository<Account> accountRepository;
         private readonly IRepository<Category> categoryRepository;
-        private readonly IRepository<RecurringTransaction> recurringTransactionRepository;
         private readonly ITransactionRepository transactionRepository;
 
         public RepositoryManager(IRepository<Account> accountRepository,
             ITransactionRepository transactionRepository,
-            IRepository<RecurringTransaction> recurringTransactionRepository,
             IRepository<Category> categoryRepository)
         {
             this.accountRepository = accountRepository;
             this.transactionRepository = transactionRepository;
-            this.recurringTransactionRepository = recurringTransactionRepository;
             this.categoryRepository = categoryRepository;
         }
 
@@ -28,9 +25,6 @@ namespace MoneyManager.Core.Manager
 
             transactionRepository.Load();
             transactionRepository.Selected = null;
-
-            recurringTransactionRepository.Load();
-            recurringTransactionRepository.Selected = null;
 
             categoryRepository.Load();
             categoryRepository.Selected = null;

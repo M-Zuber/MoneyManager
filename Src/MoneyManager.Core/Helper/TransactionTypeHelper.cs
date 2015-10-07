@@ -1,5 +1,6 @@
 ﻿using System;
 using MoneyManager.Foundation;
+using MoneyManager.Localization;
 
 namespace MoneyManager.Core.Helper
 {
@@ -22,32 +23,58 @@ namespace MoneyManager.Core.Helper
         ///     Returns based on an enum int the title for the transaction type.
         /// </summary>
         /// <param name="type">Int of the enum.</param>
+        /// <param name="isEditMode">States if the title is used for the edit mode or for adding</param>
         /// <returns>Title for the enum.</returns>
-        public static string GetViewTitleForType(int type)
+        public static string GetViewTitleForType(int type, bool isEditMode)
         {
-            return GetViewTitleForType((TransactionType) type);
+            return GetViewTitleForType((TransactionType) type, isEditMode);
         }
 
         /// <summary>
         ///     Returns based on an transaction type the title.
         /// </summary>
         /// <param name="type">Transactiontype for which the title is searched.</param>
+        /// <param name="isEditMode">States if the title is used for the edit mode or for adding</param>
         /// <returns>Title for the enum.</returns>
-        public static string GetViewTitleForType(TransactionType type)
+        public static string GetViewTitleForType(TransactionType type, bool isEditMode)
         {
             switch (type)
             {
                 case TransactionType.Spending:
-                    return Strings.SpendingTitle;
+                    return isEditMode ? Strings.EditSpendingTitle : Strings.AddSpendingTitle;
 
                 case TransactionType.Income:
-                    return Strings.IncomeTitle;
+                    return isEditMode ? Strings.EditIncomeTitle : Strings.AddIncomeTitle;
 
                 case TransactionType.Transfer:
-                    return Strings.TransferTitle;
+                    return isEditMode ? Strings.EditTransferTitle : Strings.AddTransferTitle;
 
                 default:
                     return string.Empty;
+            }
+        }
+
+        /// <summary>
+        ///     Determines the string for transaction type based on the passed int.
+        /// </summary>
+        /// <param name="type">The Transaction type as int.</param>
+        /// <returns>The string for the determined type.</returns>
+        public static string GetTypeString(int type)
+        {
+            switch (type)
+            {
+                case (int) TransactionType.Income:
+                    return TransactionType.Income.ToString();
+
+                case (int) TransactionType.Spending:
+                    return TransactionType.Spending.ToString();
+
+                case (int) TransactionType.Transfer:
+                    return TransactionType.Transfer.ToString();
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type),
+                        "Passed Number didn't match to a transaction type.");
             }
         }
     }

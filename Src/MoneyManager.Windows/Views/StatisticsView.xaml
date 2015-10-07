@@ -5,20 +5,48 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:MoneyManager.Windows.Controls"
+    xmlns:windows="using:OxyPlot.Windows"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Pivot Margin="0,30,0,0">
-            <PivotItem Header="Foo1">
-                <controls:BarChartUserControl />
-            </PivotItem>            
-            
-            <PivotItem Header="Foo2">
-                <controls:PieChartUserControl />
-            </PivotItem> 
-            
-            <PivotItem Header="Foo3">
-                <controls:CategorySummaryUserControl />
+        <Pivot Style="{StaticResource TabsStylePivotStyle}">
+            <PivotItem>
+                <PivotItem.Header>
+                    <controls:TabHeader Label="Cash Flow"
+                                        x:Uid="CashFlowTitle"
+                                        Glyph="&#xE908;" />
+                </PivotItem.Header>
+                <Grid>
+                    <windows:PlotView Model="{Binding CashFlowModel}"
+                                      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch" />
+                </Grid>
+            </PivotItem>
+
+            <PivotItem>
+                <PivotItem.Header>
+                    <controls:TabHeader Label="Spreading"
+                                        x:Uid="SpreadingTitle"
+                                        Glyph="&#xE774;" />
+                </PivotItem.Header>
+                <Grid Margin="30">
+                    <windows:PlotView Model="{Binding SpreadingModel}"
+                                      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch" />
+                </Grid>
+            </PivotItem>
+
+            <PivotItem>
+                <PivotItem.Header>
+                    <controls:TabHeader Label="Category Summary"
+                                        x:Uid="CategorySummaryTitle"
+                                        Glyph="&#xE8EC;" />
+                </PivotItem.Header>
+                <controls:CategorySummaryUserControl HorizontalAlignment="Stretch"
+                                                     VerticalAlignment="Stretch"
+                                                     Margin="-12,0,-12,0" />
             </PivotItem>
         </Pivot>
     </Grid>

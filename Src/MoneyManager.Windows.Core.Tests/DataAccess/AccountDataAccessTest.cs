@@ -1,22 +1,20 @@
 ﻿using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using MoneyManager.Core;
-using MoneyManager.Core.DataAccess;
+using MoneyManager.DataAccess;
+using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Windows.Core.Tests.Helper;
-using SQLite.Net.Platform.WinRT;
+using MvvmCross.Plugins.Sqlite.WindowsUWP;
+using Xunit;
 
 namespace MoneyManager.Windows.Core.Tests.DataAccess
 {
-    [TestClass]
     public class AccountDataAccessTest
     {
-        [TestMethod]
-        [TestCategory("Integration")]
+        [Fact]
+        [Trait("Category", "Integration")]
         public void AccountDataAccess_CrudAccount()
         {
             var accountDataAccess =
-                new AccountDataAccess(new DbHelper(new SQLitePlatformWinRT(), new TestDatabasePath()));
+                new AccountDataAccess(new SqliteConnectionCreator(new WindowsSqliteConnectionFactory()));
 
             const string firstName = "fooo Name";
             const string secondName = "new Foooo";
@@ -29,28 +27,28 @@ namespace MoneyManager.Windows.Core.Tests.DataAccess
                 Note = "this is a note"
             };
 
-            accountDataAccess.Save(account);
+            accountDataAccess.SaveItem(account);
 
             accountDataAccess.LoadList();
             var list = accountDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(firstName, list.First().Name);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(firstName, list.First().Name);
 
             account.Name = secondName;
 
-            accountDataAccess.Save(account);
+            accountDataAccess.SaveItem(account);
 
             list = accountDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(secondName, list.First().Name);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(secondName, list.First().Name);
 
-            accountDataAccess.Delete(account);
+            accountDataAccess.DeleteItem(account);
 
             list = accountDataAccess.LoadList();
 
-            Assert.IsFalse(list.Any());
+            Assert.False(list.Any());
         }
     }
 }

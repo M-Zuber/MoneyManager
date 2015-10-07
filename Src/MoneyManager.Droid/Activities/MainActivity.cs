@@ -5,20 +5,17 @@ using Android.OS;
 using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Widget;
-using Cirrious.MvvmCross.Droid.Views;
+using Cirrious.CrossCore;
+using Cirrious.MvvmCross.Droid.Support.Fragging;
 using MoneyManager.Core.ViewModels;
-using MoneyManager.Foundation;
+using MoneyManager.Droid.Fragments;
+using MoneyManager.Localization;
 
 namespace MoneyManager.Droid.Activities
 {
     [Activity(Label = "MoneyManager", MainLauncher = true, Icon = "@drawable/icon")]
-    public class MainActivity : MvxActivity
+    public class MainActivity : MvxFragmentActivity
     {
-        private string title;
-        private string drawerTitle;
-        private SlidingPaneLayout slidingLayout;
-        private ListView menuListView;
-
         private readonly List<string> menuItems = new List<string>
         {
             Strings.AccountsLabel,
@@ -28,9 +25,19 @@ namespace MoneyManager.Droid.Activities
             Strings.AboutLabel
         };
 
+        private AboutFragment aboutFragment;
+
+        private AccountListFragment accountListFragment;
+
+        private string drawerTitle;
+        private ListView menuListView;
+        private SlidingPaneLayout slidingLayout;
+        private StatisticFragment statisticFragment;
+        private string title;
+
         public new MainViewModel ViewModel
         {
-            get { return (MainViewModel)base.ViewModel; }
+            get { return (MainViewModel) base.ViewModel; }
             set { base.ViewModel = value; }
         }
 
@@ -39,10 +46,24 @@ namespace MoneyManager.Droid.Activities
             base.OnCreate(bundle);
 
             // Set our view from the "main" layout resource
-            SetContentView(Resource.Layout.Main);
+            SetContentView(Resource.Layout.MainLayout);
 
             slidingLayout = FindViewById<SlidingPaneLayout>(Resource.Id.main_layout);
             menuListView = FindViewById<ListView>(Resource.Id.left_pane);
+            accountListFragment = new AccountListFragment
+            {
+                ViewModel = Mvx.Resolve<AccountListViewModel>()
+            };
+
+            statisticFragment = new StatisticFragment
+            {
+                ViewModel = Mvx.Resolve<StatisticViewModel>()
+            };
+
+            aboutFragment = new AboutFragment
+            {
+                ViewModel = Mvx.Resolve<AboutViewModel>()
+            };
 
             slidingLayout.PanelOpened += (sender, e) =>
             {
@@ -67,6 +88,10 @@ namespace MoneyManager.Droid.Activities
             drawerTitle = Strings.MenuTitle;
 
             slidingLayout.ViewTreeObserver.GlobalLayout += FirstLayoutListener;
+
+            var fragmenTransaction = SupportFragmentManager.BeginTransaction();
+            fragmenTransaction.Add(Resource.Id.content_pane, accountListFragment);
+            fragmenTransaction.Commit();
         }
 
         private void NavigationClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -76,12 +101,30 @@ namespace MoneyManager.Droid.Activities
             switch (e.Position)
             {
                 case 0:
+                    SupportFragmentManager.BeginTransaction()
+                        .Replace(Resource.Id.content_pane, accountListFragment)
+                        .AddToBackStack("AccountList")
+                        .Commit();
                     break;
 
                 case 1:
+                    SupportFragmentManager.BeginTransaction()
+                        .Replace(Resource.Id.content_pane, statisticFragment)
+                        .AddToBackStack("Statistic")
+                        .Commit();
                     break;
 
                 case 2:
+                    break;
+
+                case 3:
+                    break;
+
+                case 4:
+                    SupportFragmentManager.BeginTransaction()
+                        .Replace(Resource.Id.content_pane, aboutFragment)
+                        .AddToBackStack("About")
+                        .Commit();
                     break;
             }
             slidingLayout.ClosePane();
@@ -145,6 +188,5 @@ namespace MoneyManager.Droid.Activities
                     return base.OnOptionsItemSelected(item);
             }
         }
-
     }
 }

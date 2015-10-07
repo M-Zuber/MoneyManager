@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using MoneyManager.Core;
-using MoneyManager.Core.DataAccess;
+using MoneyManager.DataAccess;
+using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
-using MoneyManager.Windows.Core.Tests.Helper;
-using SQLite.Net.Platform.WinRT;
+using MvvmCross.Plugins.Sqlite.WindowsUWP;
+using Xunit;
 
 namespace MoneyManager.Windows.Core.Tests.DataAccess
 {
-    [TestClass]
     public class RecurringTransactionDataAccessTest
     {
-        [TestMethod]
-        [TestCategory("Integration")]
+        [Fact]
+        [Trait("Category", "Integration")]
         public void RecurringTransactionDataAccess_CrudRecurringTransaction()
         {
             var recurringTransactionDataAccess =
-                new RecurringTransactionDataAccess(new DbHelper(new SQLitePlatformWinRT(), new TestDatabasePath()));
+                new RecurringTransactionDataAccess(new SqliteConnectionCreator(new WindowsSqliteConnectionFactory()));
 
             const double firstAmount = 100.70;
             const double secondAmount = 80.45;
@@ -31,29 +29,29 @@ namespace MoneyManager.Windows.Core.Tests.DataAccess
                 Note = "this is a note!!!"
             };
 
-            recurringTransactionDataAccess.Save(transaction);
+            recurringTransactionDataAccess.SaveItem(transaction);
 
 
             var list = recurringTransactionDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(firstAmount, list.First().Amount);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(firstAmount, list.First().Amount);
 
             transaction.Amount = secondAmount;
 
-            recurringTransactionDataAccess.Save(transaction);
+            recurringTransactionDataAccess.SaveItem(transaction);
 
             recurringTransactionDataAccess.LoadList();
             list = recurringTransactionDataAccess.LoadList();
 
-            Assert.AreEqual(1, list.Count);
-            Assert.AreEqual(secondAmount, list.First().Amount);
+            Assert.Equal(1, list.Count);
+            Assert.Equal(secondAmount, list.First().Amount);
 
-            recurringTransactionDataAccess.Delete(transaction);
+            recurringTransactionDataAccess.DeleteItem(transaction);
 
             recurringTransactionDataAccess.LoadList();
             list = recurringTransactionDataAccess.LoadList();
-            Assert.IsFalse(list.Any());
+            Assert.False(list.Any());
         }
     }
 }

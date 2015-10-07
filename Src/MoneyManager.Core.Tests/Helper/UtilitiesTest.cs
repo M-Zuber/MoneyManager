@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
 using MoneyManager.Core.Helper;
+using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
+using Xunit;
 
 namespace MoneyManager.Core.Tests.Helper
 {
-    [TestClass]
     public class UtilitiesTest
     {
-        [TestMethod]
-        public void Utilities_RoundStatisticItems()
+        [Fact]
+        public void RoundStatisticItems_ListOfItems_ListWithRoundedItems()
         {
             var statisticItems = new List<StatisticItem>
             {
@@ -33,16 +34,27 @@ namespace MoneyManager.Core.Tests.Helper
             };
             Utilities.RoundStatisticItems(statisticItems);
 
-            Assert.AreEqual(statisticItems[0].Value, 3.23);
-            Assert.AreEqual(statisticItems[1].Value, 6.59);
-            Assert.AreEqual(statisticItems[2].Value, 55.39);
-            Assert.AreEqual(statisticItems[3].Value, 9);
+            Assert.Equal(statisticItems[0].Value, 3.23);
+            Assert.Equal(statisticItems[1].Value, 6.59);
+            Assert.Equal(statisticItems[2].Value, 55.39);
+            Assert.Equal(statisticItems[3].Value, 9);
         }
 
-        [TestMethod]
-        public void Utilities_GetEndOfMonth()
+        [Fact]
+        public void GetEndOfMonth_NoneInput_LastDayOfMonth()
         {
-            Assert.IsInstanceOfType(Utilities.GetEndOfMonth(), typeof (DateTime));
+            Utilities.GetEndOfMonth().ShouldBeInstanceOf<DateTime>();
+        }
+
+        [Theory]
+        [InlineData(6000000.45, "de-DE", "6.000.000,45")]
+        [InlineData(6000000, "de-DE", "6.000.000,00")]
+        [InlineData(6000000, "en-US", "6,000,000.00")]
+        public void FormatLargeNumbers_AmountShort_ValidString(double amount, string culture, string result)
+        {
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
+            Utilities.FormatLargeNumbers(amount).ShouldBe(result);
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CurrentCulture;
         }
     }
 }

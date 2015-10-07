@@ -1,50 +1,38 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MoneyManager.Core.Helper;
 using MoneyManager.Core.Repositories;
 using MoneyManager.Core.Tests.Mocks;
 using MoneyManager.Foundation;
 using MoneyManager.Foundation.Model;
+using Xunit;
 
 namespace MoneyManager.Core.Tests.Repositories
 {
-    [TestClass]
     public class TransactionRepositoryTests
     {
-        [TestMethod]
-        public void TransactionRepository_SaveWithouthAccount()
+        [Fact]
+        public void SaveWithouthAccount_NoAccount_InvalidDataException()
         {
-            try
-            {
-                var transactionDataAccessMock = new TransactionDataAccessMock();
-                var repository = new TransactionRepository(transactionDataAccessMock);
+            var repository = new TransactionRepository(new TransactionDataAccessMock(),
+                new RecurringTransactionDataAccessMock());
 
-                var transaction = new FinancialTransaction
-                {
-                    Amount = 20,
-                    AmountWithoutExchange = 20
-                };
+            var transaction = new FinancialTransaction
+            {
+                Amount = 20
+            };
 
-                repository.Save(transaction);
-            }
-            catch (InvalidDataException)
-            {
-                return;
-            }
-            catch (Exception)
-            {
-                Assert.Fail("wrong exception.");
-            }
-            Assert.Fail("No excpetion thrown");
+            Assert.Throws<InvalidDataException>(() => repository.Save(transaction));
         }
 
-        [TestMethod]
-        public void TransactionRepository_Save()
+        [Theory]
+        [InlineData(TransactionType.Income)]
+        public void Save_DifferentTransactionTypes_CorrectlySaved(TransactionType type)
         {
             var transactionDataAccessMock = new TransactionDataAccessMock();
-            var repository = new TransactionRepository(transactionDataAccessMock);
+            var repository = new TransactionRepository(transactionDataAccessMock,
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -54,21 +42,25 @@ namespace MoneyManager.Core.Tests.Repositories
             var transaction = new FinancialTransaction
             {
                 ChargedAccount = account,
+                TargetAccount = null,
                 Amount = 20,
-                AmountWithoutExchange = 20
+                Type = (int) type
             };
 
             repository.Save(transaction);
 
-            Assert.IsTrue(transaction == transactionDataAccessMock.FinancialTransactionTestList[0]);
-            Assert.IsTrue(account == transactionDataAccessMock.FinancialTransactionTestList[0].ChargedAccount);
+            transactionDataAccessMock.FinancialTransactionTestList[0].ShouldBeSameAs(transaction);
+            transactionDataAccessMock.FinancialTransactionTestList[0].ChargedAccount.ShouldBeSameAs(account);
+            transactionDataAccessMock.FinancialTransactionTestList[0].TargetAccount.ShouldBeNull();
+            transactionDataAccessMock.FinancialTransactionTestList[0].Type.ShouldBe((int) type);
         }
 
-        [TestMethod]
-        public void TransactionRepository_SaveTransfer()
+        [Fact]
+        public void Save_TransferTransaction_CorrectlySaved()
         {
             var transactionDataAccessMock = new TransactionDataAccessMock();
-            var repository = new TransactionRepository(transactionDataAccessMock);
+            var repository = new TransactionRepository(transactionDataAccessMock,
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -85,22 +77,23 @@ namespace MoneyManager.Core.Tests.Repositories
                 ChargedAccount = account,
                 TargetAccount = targetAccount,
                 Amount = 20,
-                AmountWithoutExchange = 20,
                 Type = (int) TransactionType.Transfer
             };
 
             repository.Save(transaction);
 
-            Assert.IsTrue(transaction == transactionDataAccessMock.FinancialTransactionTestList[0]);
-            Assert.IsTrue(account == transactionDataAccessMock.FinancialTransactionTestList[0].ChargedAccount);
-            Assert.IsTrue(targetAccount == transactionDataAccessMock.FinancialTransactionTestList[0].TargetAccount);
+            transactionDataAccessMock.FinancialTransactionTestList[0].ShouldBeSameAs(transaction);
+            transactionDataAccessMock.FinancialTransactionTestList[0].ChargedAccount.ShouldBeSameAs(account);
+            transactionDataAccessMock.FinancialTransactionTestList[0].TargetAccount.ShouldBeSameAs(targetAccount);
+            transactionDataAccessMock.FinancialTransactionTestList[0].Type.ShouldBe((int) TransactionType.Transfer);
         }
 
-        [TestMethod]
+        [Fact]
         public void TransactionRepository_Delete()
         {
             var transactionDataAccessMock = new TransactionDataAccessMock();
-            var repository = new TransactionRepository(transactionDataAccessMock);
+            var repository = new TransactionRepository(transactionDataAccessMock,
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -110,29 +103,30 @@ namespace MoneyManager.Core.Tests.Repositories
             var transaction = new FinancialTransaction
             {
                 ChargedAccount = account,
-                Amount = 20,
-                AmountWithoutExchange = 20
+                Amount = 20
             };
 
             repository.Save(transaction);
-            Assert.AreSame(transaction, transactionDataAccessMock.FinancialTransactionTestList[0]);
+            transactionDataAccessMock.FinancialTransactionTestList[0].ShouldBeSameAs(transaction);
 
             repository.Delete(transaction);
 
-            Assert.IsFalse(transactionDataAccessMock.FinancialTransactionTestList.Any());
-            Assert.IsFalse(repository.Data.Any());
+            transactionDataAccessMock.FinancialTransactionTestList.Any().ShouldBeFalse();
+            repository.Data.Any().ShouldBeFalse();
         }
 
-        [TestMethod]
+        [Fact]
         public void TransactionRepository_AccessCache()
         {
-            Assert.IsNotNull(new TransactionRepository(new TransactionDataAccessMock()).Data);
+            new TransactionRepository(new TransactionDataAccessMock(), new RecurringTransactionDataAccessMock()).Data
+                .ShouldNotBeNull();
         }
 
-        [TestMethod]
+        [Fact]
         public void TransactionRepository_AddMultipleToCache()
         {
-            var repository = new TransactionRepository(new TransactionDataAccessMock());
+            var repository = new TransactionRepository(new TransactionDataAccessMock(),
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -142,29 +136,28 @@ namespace MoneyManager.Core.Tests.Repositories
             var transaction = new FinancialTransaction
             {
                 ChargedAccount = account,
-                Amount = 20,
-                AmountWithoutExchange = 20
+                Amount = 20
             };
 
             var secondTransaction = new FinancialTransaction
             {
                 ChargedAccount = account,
-                Amount = 60,
-                AmountWithoutExchange = 60
+                Amount = 60
             };
 
             repository.Save(transaction);
             repository.Save(secondTransaction);
 
-            Assert.AreEqual(2, repository.Data.Count);
-            Assert.AreSame(transaction, repository.Data[0]);
-            Assert.AreSame(secondTransaction, repository.Data[1]);
+            repository.Data.Count.ShouldBe(2);
+            repository.Data[0].ShouldBeSameAs(transaction);
+            repository.Data[1].ShouldBeSameAs(secondTransaction);
         }
 
-        [TestMethod]
-        public void TransactionRepository_AddItemToDataList()
+        [Fact]
+        public void AddItemToDataList_SaveAccount_IsAddedToData()
         {
-            var repository = new TransactionRepository(new TransactionDataAccessMock());
+            var repository = new TransactionRepository(new TransactionDataAccessMock(),
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -175,18 +168,18 @@ namespace MoneyManager.Core.Tests.Repositories
             {
                 ChargedAccount = account,
                 Amount = 20,
-                AmountWithoutExchange = 20,
                 Type = (int) TransactionType.Transfer
             };
 
             repository.Save(transaction);
-            Assert.IsTrue(repository.Data.Contains(transaction));
+            repository.Data.Contains(transaction).ShouldBeTrue();
         }
 
-        [TestMethod]
-        public void TransactionRepository_GetUnclearedTransactionsPast()
+        [Fact]
+        public void GetUnclearedTransactions_PastDate_PastTransactions()
         {
-            var repository = new TransactionRepository(new TransactionDataAccessMock());
+            var repository = new TransactionRepository(new TransactionDataAccessMock(),
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -199,22 +192,24 @@ namespace MoneyManager.Core.Tests.Repositories
                 Amount = 55,
                 Date = DateTime.Today.AddDays(-1),
                 Note = "this is a note!!!",
-                Cleared = false
+                IsCleared = false
             }
                 );
 
             var transactions = repository.GetUnclearedTransactions();
 
-            Assert.AreEqual(1, transactions.Count());
+            transactions.Count().ShouldBe(1);
         }
 
         /// <summary>
         ///     This Test may fail if the date overlaps with the month transition.
         /// </summary>
-        [TestMethod]
-        public void TransactionRepository_GetUnclearedTransactionsFuture()
+        [Fact]
+        [Trait("volatile", "")]
+        public void GetUnclearedTransactions_FutureDate_PastTransactions()
         {
-            var repository = new TransactionRepository(new TransactionDataAccessMock());
+            var repository = new TransactionRepository(new TransactionDataAccessMock(),
+                new RecurringTransactionDataAccessMock());
 
             var account = new Account
             {
@@ -227,34 +222,34 @@ namespace MoneyManager.Core.Tests.Repositories
                 Amount = 55,
                 Date = Utilities.GetEndOfMonth().AddDays(-1),
                 Note = "this is a note!!!",
-                Cleared = false
+                IsCleared = false
             }
                 );
 
             var transactions = repository.GetUnclearedTransactions();
-            Assert.AreEqual(0, transactions.Count());
+            transactions.Count().ShouldBe(0);
 
             transactions = repository.GetUnclearedTransactions(Utilities.GetEndOfMonth());
-            Assert.AreEqual(1, transactions.Count());
+            transactions.Count().ShouldBe(1);
         }
 
-        [TestMethod]
-        public void TransactionRepository_GetUnclearedTransactions_AccountNull()
+        [Fact]
+        public void GetUnclearedTransactions_AccountNull()
         {
-            var repository = new TransactionRepository(new TransactionDataAccessMock());
+            var repository = new TransactionRepository(new TransactionDataAccessMock(),
+                new RecurringTransactionDataAccessMock());
 
             repository.Data.Add(new FinancialTransaction
             {
                 Amount = 55,
                 Date = DateTime.Today.AddDays(-1),
                 Note = "this is a note!!!",
-                Cleared = false
+                IsCleared = false
             }
                 );
 
             var transactions = repository.GetUnclearedTransactions();
-
-            Assert.AreEqual(1, transactions.Count());
+            transactions.Count().ShouldBe(1);
         }
     }
 }

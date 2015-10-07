@@ -8,18 +8,17 @@
       xmlns:controls="using:MoneyManager.Windows.Controls"
       xmlns:converter="using:MoneyManager.Windows.Converter"
       mc:Ignorable="d"
-      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-      DataContext="{Binding BackupViewModel, Source={StaticResource Locator}}">
-
-    <Page.Resources>
-        <converter:BooleanToVisibilityConverter x:Key="BooleanVisibilityConverter" />
-    </Page.Resources>
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <interactivity:Interaction.Behaviors>
         <core:EventTriggerBehavior EventName="Loaded">
             <core:InvokeCommandAction Command="{Binding LoadedCommand, Mode=OneWay}" />
         </core:EventTriggerBehavior>
     </interactivity:Interaction.Behaviors>
+
+    <Page.Resources>
+        <converter:BooleanToVisibilityConverter x:Key="BooleanVisibilityConverter" />
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -38,7 +37,7 @@
                     EntranceNavigationTransitionInfo.IsTargetElement="True">
             <StackPanel>
                 <TextBlock x:Uid="BackupInformation"
-                           Text="Backupinformation"
+                           Text="BackupInformation"
                            Margin="0,0,0,12"
                            TextWrapping="WrapWholeWords" />
                 <Button Content="Create Backup"
