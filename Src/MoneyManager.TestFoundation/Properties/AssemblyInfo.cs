@@ -5,11 +5,11 @@ using System.Resources;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("MoneyManager.DataAccess")]
+[assembly: AssemblyTitle("MoneyManager.TestFoundation")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Apply Solutions")]
-[assembly: AssemblyProduct("MoneyManager.DataAccess")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("MoneyManager.TestFoundation")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
